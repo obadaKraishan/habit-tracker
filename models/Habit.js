@@ -8,7 +8,7 @@ const habitSchema = new mongoose.Schema({
   progress: { type: Number, default: 0 },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   reminders: { type: Boolean, default: false },
-  datesCompleted: [{ type: Date }],
+  datesCompleted: [{ type: Date }],  // Tracks each date the habit is completed
   createdAt: { type: Date, default: Date.now }
 });
 

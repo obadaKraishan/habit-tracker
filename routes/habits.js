@@ -34,12 +34,12 @@ router.post('/', auth, async (req, res) => {
 // Update habit
 router.put('/:id', auth, async (req, res) => {
   const { id } = req.params;
-  const { name, description, frequency, goal, progress, reminders } = req.body;
+  const { name, description, frequency, goal, reminders, datesCompleted } = req.body;
 
   try {
     const habit = await Habit.findByIdAndUpdate(
       id,
-      { name, description, frequency, goal, progress, reminders },
+      { name, description, frequency, goal, reminders, datesCompleted },
       { new: true }
     );
 

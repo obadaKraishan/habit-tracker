@@ -157,7 +157,12 @@ function generateHabitGrid(habits) {
   const grid = document.getElementById('habitGrid');
   grid.innerHTML = '';
 
-  const days = Array.from({ length: 365 }, (_, i) => new Date(Date.now() - i * 86400000));
+  const days = Array.from({ length: 365 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    return date;
+  });
+
   const columns = {};
 
   days.forEach(day => {
@@ -166,7 +171,7 @@ function generateHabitGrid(habits) {
     if (!columns[month]) {
       columns[month] = [];
     }
-    columns[month].push(dayOfMonth);
+    columns[month].push({ dayOfMonth, day }); 
   });
 
   for (let [month, days] of Object.entries(columns)) {
@@ -176,14 +181,54 @@ function generateHabitGrid(habits) {
     header.className = 'grid-column-header';
     header.innerText = month;
     column.appendChild(header);
-    days.forEach(day => {
+    days.forEach(({ dayOfMonth, day }) => {
       const cell = document.createElement('div');
       cell.className = 'grid-cell';
-      cell.style.backgroundColor = getHabitColor(habits, day);
+      const habitCompletion = getHabitCompletion(habits, day);
+      cell.style.backgroundColor = habitCompletion.color;
+      cell.innerHTML = habitCompletion.content;
+      cell.addEventListener('click', () => toggleHabitCompletion(habits, day));
       column.appendChild(cell);
     });
     grid.appendChild(column);
   }
+}
+
+function getHabitCompletion(habits, day) {
+  let completionContent = '';
+  let color = '#ebedf0'; // Default color for uncompleted
+
+  habits.forEach(habit => {
+    if (habit.datesCompleted.some(date => new Date(date).toDateString() === day.toDateString())) {
+      color = '#9be9a8'; // Completed color
+      completionContent = `<span>${habit.name}</span>`;
+    }
+  });
+
+  return { color, content: completionContent };
+}
+
+function toggleHabitCompletion(habits, day) {
+  habits.forEach(habit => {
+    const completed = habit.datesCompleted.some(date => new Date(date).toDateString() === day.toDateString());
+    if (!completed) {
+      habit.datesCompleted.push(day);
+    } else {
+      habit.datesCompleted = habit.datesCompleted.filter(date => new Date(date).toDateString() !== day.toDateString());
+    }
+
+    // Update the habit on the server
+    fetch(`/api/habits/${habit._id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(habit)
+    })
+    .then(() => fetchHabits())
+    .catch(error => showFeedback('Error: ' + error.message));
+  });
 }
 
 function getHabitColor(habits, day) {
@@ -200,8 +245,46 @@ function getHabitColor(habits, day) {
   }
 }
 
+
 function editHabit(id) {
-  // Implement habit editing functionality here
+  const habit = habits.find(h => h._id === id); // Assuming habits are stored in a global variable
+
+  // Populate the form with the current habit details
+  document.getElementById('habitName').value = habit.name;
+  document.getElementById('habitDescription').value = habit.description;
+  document.getElementById('habitFrequency').value = habit.frequency;
+  document.getElementById('habitGoal').value = habit.goal;
+  document.getElementById('habitReminders').checked = habit.reminders;
+
+  // Change the form submission to update the habit instead of creating a new one
+  document.getElementById('habitForm').onsubmit = function(event) {
+    event.preventDefault();
+
+    const updatedHabit = {
+      name: document.getElementById('habitName').value,
+      description: document.getElementById('habitDescription').value,
+      frequency: document.getElementById('habitFrequency').value,
+      goal: document.getElementById('habitGoal').value,
+      reminders: document.getElementById('habitReminders').checked,
+    };
+
+    fetch(`/api/habits/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updatedHabit)
+    })
+    .then(response => response.json())
+    .then(updatedHabit => {
+      fetchHabits(); // Refresh the list of habits
+      showFeedback('Habit updated successfully!');
+      document.getElementById('habitForm').reset(); // Clear the form
+      document.getElementById('habitForm').onsubmit = addHabit; // Reset form submission behavior
+    })
+    .catch(error => showFeedback('Error: ' + error.message));
+  };
 }
 
 function logout() {
