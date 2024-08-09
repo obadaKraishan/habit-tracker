@@ -31,7 +31,7 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Update habit
+// Update habit (including datesCompleted)
 router.put('/:id', auth, async (req, res) => {
   const { id } = req.params;
   const { name, description, frequency, goal, reminders, datesCompleted } = req.body;
@@ -43,6 +43,30 @@ router.put('/:id', auth, async (req, res) => {
       { new: true }
     );
 
+    res.json(habit);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Mark habit as complete for a specific date
+router.put('/:id/complete', auth, async (req, res) => {
+  const { id } = req.params;
+  const { date } = req.body;
+
+  try {
+    const habit = await Habit.findById(id);
+    if (!habit) return res.status(404).json({ error: 'Habit not found' });
+
+    const dateIndex = habit.datesCompleted.findIndex(d => d.toISOString().split('T')[0] === date);
+    
+    if (dateIndex === -1) {
+      habit.datesCompleted.push(new Date(date));
+    } else {
+      habit.datesCompleted.splice(dateIndex, 1);
+    }
+
+    await habit.save();
     res.json(habit);
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
