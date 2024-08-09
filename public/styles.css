@@ -22,28 +22,30 @@ body {
   }
   
   .grid-column {
-    display: flex;
-    flex-direction: column;
-    margin-right: 2px;
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 5px;
   }
   
   .grid-column-header {
-    font-size: 10px;
+    font-weight: bold;
     text-align: center;
     margin-bottom: 5px;
   }
   
   .grid-cell {
-    width: 15px;
-    height: 15px;
-    margin-bottom: 2px;
-    border: 1px solid #ddd;
+    width: 20px;
+    height: 20px;
+    margin: 2px;
     background-color: #ebedf0;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
   }
   
   .grid-cell:hover {
-    border: 1px solid #333;
-  }
+    background-color: #c6e48b;
+  }  
   
   .list-group-item {
     display: flex;

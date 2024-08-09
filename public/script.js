@@ -157,55 +157,47 @@ function generateHabitGrid(habits) {
   const grid = document.getElementById('habitGrid');
   grid.innerHTML = '';
 
-  const days = Array.from({ length: 365 }, (_, i) => {
+  // Generate 12 months (columns)
+  const months = Array.from({ length: 12 }, (_, i) => {
     const date = new Date();
-    date.setDate(date.getDate() - i);
+    date.setMonth(date.getMonth() - i);
     return date;
-  });
+  }).reverse(); // Reverse to display from Jan to Dec
 
-  const columns = {};
+  months.forEach(month => {
+    const monthColumn = document.createElement('div');
+    monthColumn.className = 'grid-column';
 
-  days.forEach(day => {
-    const month = day.toLocaleString('default', { month: 'short' });
-    const dayOfMonth = day.getDate();
-    if (!columns[month]) {
-      columns[month] = [];
-    }
-    columns[month].push({ dayOfMonth, day }); 
-  });
+    const monthName = document.createElement('div');
+    monthName.className = 'grid-column-header';
+    monthName.innerText = month.toLocaleString('default', { month: 'short' });
+    monthColumn.appendChild(monthName);
 
-  for (let [month, days] of Object.entries(columns)) {
-    const column = document.createElement('div');
-    column.className = 'grid-column';
-    const header = document.createElement('div');
-    header.className = 'grid-column-header';
-    header.innerText = month;
-    column.appendChild(header);
-    days.forEach(({ dayOfMonth, day }) => {
+    // Generate days for each month
+    for (let day = 1; day <= 31; day++) {
       const cell = document.createElement('div');
       cell.className = 'grid-cell';
-      const habitCompletion = getHabitCompletion(habits, day);
-      cell.style.backgroundColor = habitCompletion.color;
-      cell.innerHTML = habitCompletion.content;
-      cell.addEventListener('click', () => toggleHabitCompletion(habits, day));
-      column.appendChild(cell);
-    });
-    grid.appendChild(column);
-  }
-}
+      const cellDate = new Date(month.getFullYear(), month.getMonth(), day);
 
-function getHabitCompletion(habits, day) {
-  let completionContent = '';
-  let color = '#ebedf0'; // Default color for uncompleted
+      if (cellDate.getMonth() !== month.getMonth()) {
+        // Skip if the day exceeds the number of days in the month
+        continue;
+      }
 
-  habits.forEach(habit => {
-    if (habit.datesCompleted.some(date => new Date(date).toDateString() === day.toDateString())) {
-      color = '#9be9a8'; // Completed color
-      completionContent = `<span>${habit.name}</span>`;
+      // Check if the habit was completed on this day
+      const habitCompleted = habits.some(habit =>
+        habit.datesCompleted.some(date => new Date(date).toDateString() === cellDate.toDateString())
+      );
+
+      cell.style.backgroundColor = habitCompleted ? '#40c463' : '#ebedf0';
+
+      // Click to toggle completion
+      cell.addEventListener('click', () => toggleHabitCompletion(habits, cellDate));
+      monthColumn.appendChild(cell);
     }
-  });
 
-  return { color, content: completionContent };
+    grid.appendChild(monthColumn);
+  });
 }
 
 function toggleHabitCompletion(habits, day) {
@@ -231,10 +223,11 @@ function toggleHabitCompletion(habits, day) {
   });
 }
 
+
 function getHabitColor(habits, day) {
   const habitCount = habits.filter(habit => {
     const habitDate = new Date(habit.createdAt);
-    return habitDate.toDateString() === day.toDateString();
+    return habit.datesCompleted.some(date => new Date(date).toDateString() === day.toDateString());
   }).length;
   switch (habitCount) {
     case 0: return '#ebedf0';
@@ -243,6 +236,21 @@ function getHabitColor(habits, day) {
     case 3: return '#30a14e';
     default: return '#216e39';
   }
+}
+
+
+function getHabitCompletion(habits, day) {
+  let completionContent = '';
+  let color = '#ebedf0'; // Default color for uncompleted
+
+  habits.forEach(habit => {
+    if (habit.datesCompleted.some(date => new Date(date).toDateString() === day.toDateString())) {
+      color = '#9be9a8'; // Completed color
+      completionContent = `<span>${habit.name}</span>`;
+    }
+  });
+
+  return { color, content: completionContent };
 }
 
 
