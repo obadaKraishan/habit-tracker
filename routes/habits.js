@@ -31,23 +31,48 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Update habit (including datesCompleted)
-router.put('/:id', auth, async (req, res) => {
+// Get a specific habit by ID
+router.get('/:id', auth, async (req, res) => {
   const { id } = req.params;
-  const { name, description, frequency, goal, reminders, datesCompleted } = req.body;
 
   try {
-    const habit = await Habit.findByIdAndUpdate(
-      id,
-      { name, description, frequency, goal, reminders, datesCompleted },
-      { new: true }
-    );
-
+    const habit = await Habit.findById(id);
+    if (!habit) {
+      return res.status(404).json({ error: 'Habit not found' });
+    }
     res.json(habit);
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+
+// Update habit (including datesCompleted)
+router.put('/:id', auth, async (req, res) => {
+  console.log('Received ID for update:', req.params.id);
+  const { id } = req.params;
+  const { name, description, frequency, goal, reminders, datesCompleted } = req.body;
+
+  try {
+    const habit = await Habit.findById(id);
+    if (!habit) {
+      return res.status(404).json({ error: 'Habit not found' });
+    }
+
+    habit.name = name;
+    habit.description = description;
+    habit.frequency = frequency;
+    habit.goal = goal;
+    habit.reminders = reminders;
+    habit.datesCompleted = datesCompleted;
+
+    await habit.save();
+    res.json(habit);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 
 // Mark habit as complete for a specific date
 router.put('/:id/complete', auth, async (req, res) => {

@@ -288,11 +288,17 @@ function getHabitCompletion(habits, day) {
 
 
 function editHabit(id) {
+  console.log('Editing habit with ID:', id);
   fetch(`/api/habits/${id}`, {
     headers: { 'Authorization': `Bearer ${authToken}` }
   })
   .then(response => response.json())
   .then(habit => {
+    if (!habit) {
+      showFeedback('Habit not found');
+      return;
+    }
+
     // Populate the form with the current habit details
     document.getElementById('habitName').value = habit.name;
     document.getElementById('habitDescription').value = habit.description;
