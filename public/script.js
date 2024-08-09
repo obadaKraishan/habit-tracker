@@ -92,6 +92,7 @@ function loginUser(username, password) {
   .catch(error => showFeedback('Error: ' + error.message));
 }
 
+
 function fetchHabits() {
   fetch('/api/habits', {
     headers: { 'Authorization': `Bearer ${authToken}` }
