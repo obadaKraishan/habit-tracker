@@ -18,10 +18,13 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ml-auto">
         <li class="nav-item">
-          <a class="nav-link" href="#" data-toggle="modal" data-target="#loginModal">Login</a>
+          <a class="nav-link" href="#" id="loginNav" data-toggle="modal" data-target="#loginModal">Login</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#" data-toggle="modal" data-target="#registerModal">Register</a>
+          <a class="nav-link" href="#" id="registerNav" data-toggle="modal" data-target="#registerModal">Register</a>
+        </li>
+        <li class="nav-item" id="logoutNav" style="display:none;">
+          <a class="nav-link" href="#" onclick="logout()">Logout</a>
         </li>
       </ul>
     </div>
@@ -29,6 +32,13 @@
 
   <div class="container mt-5">
     <h1 class="text-center">Habit Tracker</h1>
+
+    <!-- Authentication notice -->
+    <div id="authNotice" class="text-center">
+      <p>Please log in or register to start tracking your habits.</p>
+      <button class="btn btn-primary" data-toggle="modal" data-target="#loginModal">Login</button>
+      <button class="btn btn-secondary" data-toggle="modal" data-target="#registerModal">Register</button>
+    </div>
 
     <!-- Habit Section -->
     <div id="habitSection" class="mb-4" style="display:none;">

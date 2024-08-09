@@ -4,8 +4,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check for token in localStorage
   authToken = localStorage.getItem('authToken');
   if (authToken) {
-    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('authNotice').style.display = 'none';
     document.getElementById('habitSection').style.display = 'block';
+    document.getElementById('loginNav').style.display = 'none';
+    document.getElementById('registerNav').style.display = 'none';
+    document.getElementById('logoutNav').style.display = 'block';
     fetchHabits();
   }
 
@@ -50,8 +53,11 @@ function registerUser(username, password) {
     if (data.token) {
       authToken = data.token;
       localStorage.setItem('authToken', authToken);
-      document.getElementById('authSection').style.display = 'none';
+      document.getElementById('authNotice').style.display = 'none';
       document.getElementById('habitSection').style.display = 'block';
+      document.getElementById('loginNav').style.display = 'none';
+      document.getElementById('registerNav').style.display = 'none';
+      document.getElementById('logoutNav').style.display = 'block';
       fetchHabits();
       showFeedback('Registration successful!');
     } else {
@@ -72,8 +78,11 @@ function loginUser(username, password) {
     if (data.token) {
       authToken = data.token;
       localStorage.setItem('authToken', authToken);
-      document.getElementById('authSection').style.display = 'none';
+      document.getElementById('authNotice').style.display = 'none';
       document.getElementById('habitSection').style.display = 'block';
+      document.getElementById('loginNav').style.display = 'none';
+      document.getElementById('registerNav').style.display = 'none';
+      document.getElementById('logoutNav').style.display = 'block';
       fetchHabits();
       showFeedback('Login successful!');
     } else {
@@ -89,6 +98,10 @@ function fetchHabits() {
   })
   .then(response => response.json())
   .then(habits => {
+    console.log('Fetched habits:', habits); // Add this line
+    if (!Array.isArray(habits)) {
+      throw new Error('Invalid response format'); // Add this check
+    }
     const habitList = document.getElementById('habitList');
     habitList.innerHTML = '';
     habits.forEach(habit => {
@@ -107,6 +120,7 @@ function fetchHabits() {
   })
   .catch(error => showFeedback('Error: ' + error.message));
 }
+
 
 function addHabit(habit) {
   fetch('/api/habits', {
@@ -187,4 +201,15 @@ function getHabitColor(habits, day) {
 
 function editHabit(id) {
   // Implement habit editing functionality here
+}
+
+function logout() {
+  authToken = '';
+  localStorage.removeItem('authToken');
+  document.getElementById('authNotice').style.display = 'block';
+  document.getElementById('habitSection').style.display = 'none';
+  document.getElementById('loginNav').style.display = 'block';
+  document.getElementById('registerNav').style.display = 'block';
+  document.getElementById('logoutNav').style.display = 'none';
+  showFeedback('Logged out successfully!');
 }
