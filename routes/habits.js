@@ -59,11 +59,11 @@ router.put('/:id/complete', auth, async (req, res) => {
     if (!habit) return res.status(404).json({ error: 'Habit not found' });
 
     const dateIndex = habit.datesCompleted.findIndex(d => d.toISOString().split('T')[0] === date);
-    
+
     if (dateIndex === -1) {
       habit.datesCompleted.push(new Date(date));
     } else {
-      habit.datesCompleted.splice(dateIndex, 1);
+      habit.datesCompleted.splice(dateIndex, 1); // Unmark as done
     }
 
     await habit.save();

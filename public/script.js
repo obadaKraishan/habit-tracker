@@ -100,7 +100,8 @@ function fetchHabits() {
   .then(response => {
     if (!response.ok) {
       return response.text().then(text => { 
-        throw new Error(text);
+        console.error('Server Error:', text); // Log the server error
+        throw new Error('Failed to fetch habits. Please try again later.');
       });
     }
     return response.json();
@@ -110,6 +111,7 @@ function fetchHabits() {
     if (!Array.isArray(habits)) {
       throw new Error('Invalid response format');
     }
+
     const habitList = document.getElementById('habitList');
     habitList.innerHTML = '';
     habits.forEach(habit => {
@@ -125,9 +127,13 @@ function fetchHabits() {
       `;
       habitList.appendChild(habitElement);
     });
+
     generateHabitGrid(habits);
   })
-  .catch(error => showFeedback('Error: ' + error.message));
+  .catch(error => {
+    console.error('Error fetching habits:', error);
+    showFeedback('Error: ' + error.message);
+  });
 }
 
 function addHabit(habit) {
@@ -167,9 +173,18 @@ function markHabitAsDone(habitId) {
     },
     body: JSON.stringify({ date: today })
   })
+  .then(response => {
+    if (!response.ok) {
+      return response.text().then(text => { 
+        throw new Error(`Failed to mark habit as done: ${text}`);
+      });
+    }
+    return response.json();
+  })
   .then(() => fetchHabits())
   .catch(error => showFeedback('Error: ' + error.message));
 }
+
 
 function deleteHabit(id) {
   fetch(`/api/habits/${id}`, {
